@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Tuple
 import cv2
 import numpy as np
 import skimage
-import skvideo
+import skvideo.io
 from omni_utils import eq_to_pers
 
 
@@ -20,7 +20,6 @@ def extract_vp_video(data: Dict[str, Any], vid_root: Path, save_dir: Path,fov: f
     if len(viewports) < 5:
         for i in range(5 - len(viewports)):
             viewports.append({"center": {"lon": cods[i], "lat": 0.0}})
-
     ffmpeg = skvideo.io.FFmpegReader(str(vidpath))
     print(f"Processing {vidpath.name}")
 
@@ -40,29 +39,6 @@ def extract_vp_video(data: Dict[str, Any], vid_root: Path, save_dir: Path,fov: f
 
     ffmpeg.close()
 
-
-def extract_vp_frame(data:Dict[str, Any], vid_root:Path, save_dir:Path, fov:float=90.0, vp_size:Tuple[int, int]=(384, 384)):
-    fov = np.deg2rad(fov)
-    vidpath = vid_root / data["erpname"]
-    viewports = data["viewports"]
-    
-    vid_cap = cv2.VideoCapture(str(vidpath))
-    vid_fps = vid_cap.get(cv2.CAP_PROP_FPS)
-    vid_length = int(vid_cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    vid_height = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    vid_width = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    print(f"Processing {vidpath.name}, {vid_length}x{vid_width}x{vid_height}@{vid_fps}fps")
-    
-    if not vid_cap.isOpened():
-        raise RuntimeError(f"Can't open {vidpath.name}!")
-    
-    ret, frame = vid_cap.read()
-    vid_cap.release()
-    for idx, viewport in enumerate(viewports):
-        lon, lat = viewport["center"].values()
-        vp_img = eq_to_pers(frame, fov, lon, -lat, *vp_size)
-        cv2.imwrite(str(save_dir / f"{vidpath.stem}_VP{idx+1:03d}.png"), vp_img)
-    
 
 def extract_vp_image(data:Dict[str, Any], img_root:Path, save_dir:Path,
                      fov:float=90.0, vp_size:Tuple[int, int]=(384, 384)):
@@ -99,7 +75,7 @@ if __name__ == "__main__":
     if args.image:
         extractor = partial(extract_vp_image, img_root=erppath, save_dir=save_dir)
     else:
-        extractor = partial(extract_vp_frame, vid_root=erppath, save_dir=save_dir)
+        extractor = partial(extract_vp_video, vid_root=erppath, save_dir=save_dir)
 
 
     with ProcessPoolExecutor(max_workers=args.max_workers) as executor:

@@ -1,4 +1,6 @@
 import os
+os.environ["http_proxy"] = "10.108.14.153:7890"
+os.environ["https_proxy"] = "10.108.14.153:7890"
 from argparse import ArgumentParser
 from pathlib import Path
 

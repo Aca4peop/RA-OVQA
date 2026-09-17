@@ -1,4 +1,7 @@
 import os
+import os
+os.environ['http_proxy']='10.108.14.153:7890'
+os.environ['https_proxy']='10.108.14.153:7890'
 from pathlib import Path
 from argparse import ArgumentParser
 
@@ -96,4 +99,4 @@ if __name__ == "__main__":
             continue
         for i in range(5):
             feats_all, feats_last = extract_feat_img(extractor, VPSpath, vname, i,args.frame_num, batch_size=10)
-            np.save(save_dir/'%s_VP%d.npy' % (save_dir, vname[:-4], i), feats_all)
+            np.save('%s/%s_VP%d.npy' % (save_dir,vname[:-4], i), feats_all)

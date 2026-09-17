@@ -1,0 +1,1 @@
+The segmentation function of our model is implemented by [TinySAM]([xinghaochen/TinySAM: [AAAI 2025\] Official PyTorch implementation of "TinySAM: Pushing the Envelope for Efficient Segment Anything Model"](https://github.com/xinghaochen/TinySAM)).

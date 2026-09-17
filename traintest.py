@@ -1,9 +1,10 @@
 import os
+
 import random
 from argparse import ArgumentParser
 
 from scipy import stats
-from tqdm import tqdm
+from tqdm import tqdm, trange
 
 import torch
 import torch.nn as nn
@@ -78,7 +79,9 @@ def five_fold_eval(database: str):
     videosource = Videosource()  # generate tran-test splits
     metrics = np.zeros((5, 3))
 
+    print('Satring 5-fold cross eval...')
     for r in range(0, 5):
+        print('Fold ' + str(r+1))
         checkpoint = videosource.fiveFolds[r]  # 5-folds eval
         train_images = checkpoint["train_images"]
         train_dmos = checkpoint["train_dmos"]
@@ -97,7 +100,7 @@ def five_fold_eval(database: str):
         criterion = nn.MSELoss()  # LossGroupQP()
         sroccbest = 0
 
-        for epoch in range(300):
+        for epoch in trange(300):
             # ------train-------------
             model.train()
 
@@ -138,8 +141,9 @@ def five_fold_eval(database: str):
                 if srocc1 > sroccbest:
                     sroccbest = srocc1
                     metrics[r, 0] = srocc1
-                    metrics[r, 0] = plcc1
-                    metrics[r, 0] = rmse1
+                    metrics[r, 1] = plcc1
+                    metrics[r, 2] = rmse1
+                tqdm.write('fold %d, epoch %d, SRCC %.4f PLCC %.4f RMSE %.4f ' % (r,epoch,srocc1,plcc1,rmse1))
 
     return metrics.mean(axis=0)
 
@@ -157,5 +161,6 @@ if __name__ == "__main__":
     torch.backends.cudnn.benchmark = False
 
     metrics = five_fold_eval(args.database)
+    print('Done.')
     print("SRCC  | PLCC  | RMSE ")
     print("%.4f | %.4f | %.4f" % (metrics[0], metrics[1], metrics[2]))

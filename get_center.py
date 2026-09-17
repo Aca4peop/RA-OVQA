@@ -154,6 +154,7 @@ if __name__ == "__main__":
     
     for erppath in tqdm(list(files)):
         erpname = erppath.name
+        tqdm.write(f"Processing {erpname}")
         result = get_viewport(mask_generator, erppath, new_size=new_size)
         results.append({
             "erpname": erpname,
