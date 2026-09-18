@@ -81,10 +81,10 @@ if __name__ == "__main__":
     parser.add_argument("--model", type=str, default="ConvNeXt_Base", help="Backbone for feature extract")
     parser.add_argument("-i",type=str,help="Input path to the input ERP directory.")
     parser.add_argument("--dir", type=str, help="Path of viewports")
-    parser.add_argument("--database", type=str, help="Database name.")
+    parser.add_argument("--database", type=str, help="Database name. ODV/JVQD/VRVQW")
     parser.add_argument("--frame_num", type=int, default=20, help="the number of required frames per video")
     args = parser.parse_args()
-
+    assert args.database in ["ODV", "JVQD", "VRVQW"]
     device = "cuda" if torch.cuda.is_available() else "cpu"
     extractor = HierarchicalFeatureExtractor(args.model, device)
 
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     VPSpath = Path(args.dir)
 
     for vname in tqdm(list(videos)):
-        if not (vname.endswith('.mp4') or vname.endswith('.mkv')):
+        if not (vname.endswith('.mp4') or vname.endswith('.mkv')or vname.endswith('.mov')) :
             continue
         for i in range(5):
             feats_all, feats_last = extract_feat_img(extractor, VPSpath, vname, i,args.frame_num, batch_size=10)

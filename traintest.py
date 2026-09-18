@@ -69,7 +69,7 @@ class TestSet(Dataset):
 def five_fold_eval(database: str):
     # parameters
     DATASources = {
-        "VQA-ODV": ODVSource,
+        "ODV": ODVSource,
         "VRVQW": VRVQWSource,
         "JVQD": JVQDSource
     }
@@ -150,7 +150,7 @@ def five_fold_eval(database: str):
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Trian and Test")
-    parser.add_argument("--database", type=str, help="Database name: VQA-ODV/VRVQW/JVQD")
+    parser.add_argument("--database", type=str, help="Database name: ODV/VRVQW/JVQD")
     args = parser.parse_args()
 
     SEED = 42

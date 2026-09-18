@@ -38,7 +38,7 @@ def get_viewport(mask_generator: SamHierarchicalMaskGenerator, erppath:Union[str
     :return list of segmentation results and centers
     """
     erppath = Path(erppath)
-    if erppath.name.endswith(".mp4") or erppath.name.endswith(".mkv"):
+    if erppath.name.endswith(".mp4") or erppath.name.endswith(".mkv") or erppath.name.endswith(".mov"):
         vidcap = cv2.VideoCapture(str(erppath))
         if not vidcap.isOpened():
             raise RuntimeError(f"Can't open {erppath.name}!")
@@ -138,7 +138,7 @@ if __name__ == "__main__":
     if args.image:
         files = [f for f in erppath.rglob("*") if f.suffix.lower() in [".png", ".jpg"]]
     else:
-        files = [f for f in erppath.rglob("*") if f.suffix.lower() in [".mp4", ".mkv"]]
+        files = [f for f in erppath.rglob("*") if f.suffix.lower() in [".mp4", ".mkv",'.mov']]
     
     model_type = "vit_t"
     sam = sam_model_registry[model_type](checkpoint="./weights/tinysam_42.3.pth")
