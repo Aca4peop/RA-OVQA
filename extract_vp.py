@@ -54,6 +54,39 @@ def extract_vp_image(data:Dict[str, Any], img_root:Path, save_dir:Path,
         cv2.imwrite(str(save_dir / f"{imgpath.stem}_VP{idx+1:03d}.png"), vp_img)
 
 
+def extract_vp_video_client(vidpath,fov: float = 90.0, vp_size: Tuple[int, int] = (384, 384)):
+    fov = np.deg2rad(fov)
+    vidpath = Path(vidpath)
+    save_dir='./tmp/vp/'
+    save_dir = Path(save_dir)
+    save_dir.mkdir(parents=True, exist_ok=True)
+    with open('./tmp/sam_temp.json', "r", encoding="utf-8") as f:
+        sam_results = json.load(f)["sam_results"]
+
+    viewports = sam_results[0]["viewports"]
+    cods = [-3/4 * math.pi, -1/4 * math.pi, 1/4* math.pi, 3/4 * math.pi]
+    if len(viewports) < 5:
+        for i in range(5 - len(viewports)):
+            viewports.append({"center": {"lon": cods[i], "lat": 0.0}})
+    ffmpeg = skvideo.io.FFmpegReader(str(vidpath))
+    print(f"Processing {vidpath.name}")
+
+    frame_idx = 0
+    save_idx = 0
+    for frame in ffmpeg.nextFrame():
+        if not frame_idx % 15==0:
+            frame_idx += 1
+            continue
+        for idx, viewport in enumerate(viewports):
+            lon, lat = viewport["center"].values()
+            vp_img = eq_to_pers(frame, fov, lon, -lat, *vp_size)
+            skimage.io.imsave('%s/%s_VP%d_F%d.png' % (save_dir, vidpath.stem, idx, save_idx), vp_img)
+
+        frame_idx += 1
+        save_idx += 1
+
+    ffmpeg.close()
+
 if __name__ == "__main__":
     parser = ArgumentParser(description="Extract viewports according to centers")
     parser.add_argument("-i",type=str,help="Input path to the input ERP directory.")

@@ -75,6 +75,18 @@ def extract_feat_img(extractor: HierarchicalFeatureExtractor, VPSpath: Path, vna
 
     return feats_all, feats_last
 
+def extract_feat_client(vname):
+    vname=Path(vname).name
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    extractor = HierarchicalFeatureExtractor("ConvNeXt_Base", device)
+
+    save_dir = Path(f"./tmp/features/")
+    save_dir.mkdir(parents=True, exist_ok=True)
+    VPSpath = Path(f"./tmp/vp/")
+    for i in range(5):
+        feats_all, feats_last = extract_feat_img(extractor, VPSpath, vname, i, 20, batch_size=10)
+        np.save('%s/%s_VP%d.npy' % (save_dir, vname[:-4], i), feats_all)
+
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Extract Viewport Video Features")

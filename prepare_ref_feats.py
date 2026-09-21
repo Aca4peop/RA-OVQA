@@ -8,6 +8,23 @@ import numpy as np
 from tqdm import tqdm
 from demo_query import VectorBaseQuery
 
+def query_client():
+    k = 5
+    v_len = 20
+    query = VectorBaseQuery("ConvNeXt_Base", "cuda", "IP")
+    root_path = Path("./tmp/features/")
+    srcs = os.listdir(root_path)
+
+    save_path = Path("./tmp/ref_features/" )
+    save_path.mkdir(parents=True, exist_ok=True)
+    for src in tqdm(srcs):
+        feats = np.load(root_path / src)
+        refs = np.zeros((v_len, 5, 1920))
+        for i in range(0, v_len):
+            feat = query.querybyfeat(feats[i: i + 1, -1024:], k)
+            for j in range(k):
+                refs[i, j] = feat[j]["feat_all"]
+        np.save(save_path / src, refs)
 
 if __name__ == "__main__":
     parser = ArgumentParser(description="Retrival similar viewports")

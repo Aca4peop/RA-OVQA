@@ -122,6 +122,39 @@ def get_viewport(mask_generator: SamHierarchicalMaskGenerator, erppath:Union[str
     return result
 
 
+def tinysam_client(erppath):
+    erppath=Path(erppath)
+    model_type = "vit_t"
+    sam = sam_model_registry[model_type](checkpoint="./weights/tinysam_42.3.pth")
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    sam.to(device=device)
+    sam.eval()
+    mask_generator = SamHierarchicalMaskGenerator(sam)
+    new_size = (1024, 512)
+
+    results = []
+    savedir = Path(args.o).parent
+    savedir.mkdir(parents=True, exist_ok=True)
+
+
+    erpname = erppath.name
+    tqdm.write(f"Processing {erpname}")
+    result = get_viewport(mask_generator, erppath, new_size=new_size)
+    results.append({
+        "erpname": erpname,
+        "viewports": result
+    })
+
+    data = {
+        "model": "TinySAM(Vit-T)",
+        "resolution": new_size,
+        "sam_results": results
+    }
+
+    with open('./tmp/sam_temp.json', "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(description="Extract viewport center from ERP images/videos using TinySAM")
     parser.add_argument("-i", type=str, help="Input path to the input ERP directory.")
